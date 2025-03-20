@@ -1,3 +1,15 @@
+# MAME-AO React UI
+
+Next Generation UI for MAME-AO.
+
+Contributors welcome.
+
+http://mame-ao-react.spludlow.co.uk/
+
+Ensure MAME-AO is running on your machine.
+
+___
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
