@@ -1,44 +1,67 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
 import logo from './logo.svg';
 import './App.css';
 
-class ShowData extends React.Component {
 
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      data: 'NOT LOADED',
-    };
-  }
+class MameMachines extends React.Component {
 
-  loadData = async () => {
-    
-    const apiUrl: string = 'http://localhost:12380/api/info';
 
-    let response: Response = await fetch(apiUrl);
+}
+
+interface StateProperties {
+  data: any;
+}
+
+const FeaturedProducts = () => {
+
+  const [products, setProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+
+    let response: Response = await fetch('http://localhost:12380/api/machines?profile=arcade-good&limit=1024');
 
     let responseData: any = await response.json();
 
-    const stateData: any = {
-      data: responseData,
-    };
-   
-    this.setState(stateData);
+    setProducts(responseData.results);
   };
 
-  componentDidMount = () => {
-    this.loadData();
+  const setActiveTab = async (e: any) => {
+    e.preventDefault();
+
+    const response = await fetch(`http://localhost:12380/api/command?line=${encodeURIComponent(e.target.alt)}`);
+
+   const result = await response.json();
+
+    if (response.status !== 200)
+      alert(result.message);
+
+    console.log(e.target.alt);
   }
 
-  render() {
-
-    const state:any = this.state;
-
-    return <div dangerouslySetInnerHTML={{ __html: renderHtmlTable(state['data']) }} />;
-
-  }
-
-}
+  return (
+      <div>
+        <h1>MAME Machines</h1>
+        <div className='item-container'>
+          {products.map((product: any) => (
+            <div className='card' key={product.name}>
+              
+              <a href='#' onClick={setActiveTab}>
+                <img src={'https://mame.spludlow.co.uk/snap/machine/' + product.name + '.jpg'} alt={product.name} />
+              </a>
+              
+              <h3>{product.name}</h3>
+              <p>{product.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+};
 
 function App() {
   return (
@@ -47,74 +70,12 @@ function App() {
         <img src={logo} className="App-logo" alt="logo" />
       </header>
 
-      <ShowData />
+
+      <FeaturedProducts />
 
     </div>
   );
 }
 
-const htmlEncode = (html: string): string => {
-  return html.replace(/[&<>'"]/g, (tag: string): string => {
-    const lookup: any = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    }
-    return lookup[tag] || '';
-  });
-}
-
-const renderHtmlTable = (data: any): string => {
-  if (data == null)
-    return 'null';
-
-  if (typeof data !== 'object')
-    return htmlEncode(JSON.stringify(data));
-
-  if (Array.isArray(data) === false) {
-    data = [data];
-  }
-
-  if (data.length === 0)
-    return '[]';
-
-  if (typeof data[0] !== 'object')
-    return htmlEncode(JSON.stringify(data));
-
-  const columnNames: string[] = [];
-  data.forEach((row: any) => {
-    Object.keys(row).forEach(columnName => {
-      if (columnNames.includes(columnName) === false)
-        columnNames.push(columnName);
-    });
-  });
-
-  let table = '';
-
-  table += '<table>';
-  table += '<tr>';
-  columnNames.forEach(columnName => {
-    table += `<th>${columnName}</th>`;
-  });
-  table += '</tr>';
-
-  data.forEach((row: any) => {
-    table += '<tr>';
-    columnNames.forEach(columnName => {
-      let value = '';
-      if (row[columnName] !== undefined)
-        value = renderHtmlTable(row[columnName]);
-
-      table += `<td>${value}</td>`;
-    });
-    table += '</tr>';
-  });
-
-  table += '</table>';
-
-  return table;
-};
 
 export default App;
